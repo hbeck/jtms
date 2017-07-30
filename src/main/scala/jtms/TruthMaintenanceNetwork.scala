@@ -19,6 +19,10 @@ trait TruthMaintenanceNetwork {
 
   var suppJ: Map[Atom, Option[Rule]] = new HashMap[Atom, Option[Rule]]
 
+  //
+  //
+  //
+
   //J
   def justifications(a: Atom): Set[Rule] = rules filter (_.head == a)
 
@@ -48,12 +52,6 @@ trait TruthMaintenanceNetwork {
 
   def unknownCons(a: Atom) = cons(a) filter (label(_) == unknown)
 
-  def removeDeprecatedCons(rule: Rule)(a: Atom): Unit = {
-    if (!(justifications(rule.head) exists (_.body contains a))) {
-      cons = cons.updated(a, cons(a) - rule.head)
-    }
-  }
-
   def clearSupport(a: Atom): Unit
 
   def setInSupport(a: Atom, rule: Rule): Unit
@@ -64,13 +62,13 @@ trait TruthMaintenanceNetwork {
 
   def updateLabel(a: Atom, label: Label): Unit
 
-  def register(rule: Rule): Boolean
+  def register(rule: Rule): Unit
 
   def register(a: Atom): Unit
 
   def deregister(a: Atom): Unit
 
-  def deregister(rule: Rule): Boolean
+  def deregister(rule: Rule): Unit
 
   def trans[T](f: T => Set[T], t: T): Set[T] = {
     trans(f)(f(t))

@@ -4,40 +4,33 @@ import jtms.core._
 
 import scala.util.Random
 
-class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random()) {
+class JtmsDoyle(tmn: TruthMaintenanceNetwork, random: Random = new Random()) {
 
   def add(rule: Rule): Unit = {
-    register(rule)
-    if (network.label(rule.head) == in) {
+    tmn.register(rule)
+    if (tmn.label(rule.head) == in) {
       return
     }
-    if (network.invalid(rule)) {
-      network.addSupport(rule.head, findSpoiler(rule).get)
+    if (tmn.invalid(rule)) {
+      tmn.addSupport(rule.head, findSpoiler(rule).get)
       return
     }
-    val atoms = network.repercussions(rule.head) + rule.head
+    val atoms = tmn.repercussions(rule.head) + rule.head
     update(atoms)
   }
 
   def remove(rule: Rule): Unit = {
-    deregister(rule)
-    if (!(network.allAtoms contains rule.head)) return
-    if (network.label(rule.head) == out) return
-    if (network.suppJ(rule.head).isDefined && network.suppJ(rule.head).get != rule) return
-    val atoms = network.repercussions(rule.head) + rule.head
+    tmn.deregister(rule)
+    if (!(tmn.allAtoms contains rule.head)) return
+    if (tmn.label(rule.head) == out) return
+    if (tmn.suppJ(rule.head).isDefined && tmn.suppJ(rule.head).get != rule) return
+    val atoms = tmn.repercussions(rule.head) + rule.head
     update(atoms)
   }
 
   //
   //
   //
-
-  def register(rule: Rule): Boolean = {
-    if (network.register(rule)) {
-      return true
-    }
-    false
-  }
 
   def update(atoms: Set[Atom]): Unit = {
     atoms foreach setUnknown
@@ -46,22 +39,22 @@ class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random())
   }
 
   def findLabel(a: Atom): Unit = {
-    if (network.label(a) != unknown) return
+    if (tmn.label(a) != unknown) return
 
     if (validation(a) || invalidation(a)) {
-      network.unknownCons(a) foreach findLabel
+      tmn.unknownCons(a) foreach findLabel
     }
   }
 
   def validation(a: Atom): Boolean = {
-    network.justifications(a) find network.valid match {
+    tmn.justifications(a) find tmn.valid match {
       case Some(rule) => setIn(rule); true
       case None => false
     }
   }
 
   def invalidation(a: Atom): Boolean = {
-    if (network.justifications(a) forall network.invalid) {
+    if (tmn.justifications(a) forall tmn.invalid) {
       setOut(a)
       return true
     }
@@ -69,45 +62,45 @@ class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random())
   }
 
   def setIn(rule: Rule) = {
-    network.updateLabel(rule.head, in)
-    network.setInSupport(rule.head, rule)
+    tmn.updateLabel(rule.head, in)
+    tmn.setInSupport(rule.head, rule)
   }
 
   def setOut(a: Atom) = {
-    network.updateLabel(a, out)
+    tmn.updateLabel(a, out)
     setOutSupport(a)
   }
 
   def setOutSupport(a: Atom) {
-    val maybeAtoms: Set[Option[Atom]] = network.justifications(a) map findSpoiler
+    val maybeAtoms: Set[Option[Atom]] = tmn.justifications(a) map findSpoiler
     if (maybeAtoms exists (_.isEmpty)) {
       throw new RuntimeException("could not find spoiler for every justification of atom " + a)
     }
-    network.setOutSupport(a, maybeAtoms map (_.get))
+    tmn.setOutSupport(a, maybeAtoms map (_.get))
   }
 
   def setUnknown(a: Atom) = {
-    network.updateLabel(a, unknown)
-    network.clearSupport(a)
+    tmn.updateLabel(a, unknown)
+    tmn.clearSupport(a)
   }
 
   def chooseLabel(a: Atom): Unit = {
-    if (network.label(a) != unknown)
+    if (tmn.label(a) != unknown)
       return
 
     if (choice(a)) {
-      network.unknownCons(a) foreach chooseLabel
+      tmn.unknownCons(a) foreach chooseLabel
     } else {
-      val aff = shuffle(network.affected(a) + a)
+      val aff = shuffle(tmn.affected(a) + a)
       aff foreach setUnknown
       aff foreach chooseLabel
     }
   }
 
   def choice(a: Atom): Boolean = {
-    network.justifications(a) find network.posValid match {
+    tmn.justifications(a) find tmn.posValid match {
       case Some(rule) => {
-        if (network.affected(a).isEmpty) setIn(rule)
+        if (tmn.affected(a).isEmpty) setIn(rule)
         else return false
       }
       case None => setOut(a) //allowing 'unknown' instead of 'out' in spoiler!
@@ -118,17 +111,17 @@ class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random())
   //may also use an unknown atom instead of an out atom (if an out-atom cannot be found)
   def findSpoiler(rule: Rule): Option[Atom] = {
     if (random.nextDouble() < 0.5) {
-      rule.pos find (network.label(_) == out) match {
-        case None => rule.neg find (network.label(_) == in) match {
-          case None => rule.pos find (network.label(_) == unknown)
+      rule.pos find (tmn.label(_) == out) match {
+        case None => rule.neg find (tmn.label(_) == in) match {
+          case None => rule.pos find (tmn.label(_) == unknown)
           case opt => opt
         }
         case opt => opt
       }
     } else {
-      rule.neg find (network.label(_) == in) match {
-        case None => rule.pos find (network.label(_) == out) match {
-          case None => rule.pos find (network.label(_) == unknown)
+      rule.neg find (tmn.label(_) == in) match {
+        case None => rule.pos find (tmn.label(_) == out) match {
+          case None => rule.pos find (tmn.label(_) == unknown)
           case opt => opt
         }
         case opt => opt
@@ -139,8 +132,6 @@ class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random())
 
   def shuffle(atoms: Set[Atom]): Seq[Atom] = random.shuffle(atoms.toSeq)
 
-  def deregister(rule: Rule) = network.deregister(rule)
-
   //
   //
   //
@@ -148,8 +139,8 @@ class JtmsDoyle(network: TruthMaintenanceNetwork, random: Random = new Random())
   type Model = Set[Atom]
 
   def getModel(): Option[Model] = {
-    val atoms = network.inAtoms
-    if (network.hasUnknown) return None
+    val atoms = tmn.inAtoms
+    if (tmn.hasUnknown) return None
     Some(atoms)
   }
 

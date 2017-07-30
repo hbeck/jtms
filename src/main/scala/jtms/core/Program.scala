@@ -1,3 +1,3 @@
 package jtms.core
 
-class Program(val rules: Set[Rule])
+case class Program(val rules: Set[Rule])

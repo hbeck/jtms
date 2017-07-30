@@ -6,6 +6,17 @@ import scala.util.Random
 
 class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwork {
 
+  override def register(rule: Rule): Unit = {
+    if (rules contains rule) return
+
+    rules = rules + rule
+
+    rule.atoms foreach register
+    rule.body foreach { atom =>
+      cons = cons updated(atom, cons(atom) + rule.head)
+    }
+  }
+
   override def register(a: Atom) = {
     if (!label.isDefinedAt(a)) {
       label = label.updated(a, out)
@@ -14,14 +25,8 @@ class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwo
     }
   }
 
-  override def deregister(a: Atom) = {
-    label = label - a
-    cons = cons - a
-    supp = supp - a
-  }
-
-  override def deregister(rule: Rule): Boolean = {
-    if (!(rules contains rule)) return false
+  override def deregister(rule: Rule): Unit = {
+    if (!(rules contains rule)) return
 
     rules = rules - rule
 
@@ -30,7 +35,18 @@ class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwo
     (rule.atoms diff remainingAtoms) foreach deregister
     (rule.body intersect remainingAtoms) foreach removeDeprecatedCons(rule)
 
-    true
+  }
+
+  def removeDeprecatedCons(rule: Rule)(a: Atom): Unit = {
+    if (!(justifications(rule.head) exists (_.body contains a))) {
+      cons = cons.updated(a, cons(a) - rule.head)
+    }
+  }
+
+  override def deregister(a: Atom) = {
+    label = label - a
+    cons = cons - a
+    supp = supp - a
   }
 
   override def clearSupport(a: Atom): Unit = {
@@ -56,16 +72,5 @@ class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwo
     label = label.updated(a, newLabel)
   }
 
-  override def register(rule: Rule): Boolean = {
-    if (rules contains rule) return false
 
-    rules = rules + rule
-
-    rule.atoms foreach register
-    rule.body foreach { atom =>
-      cons = cons updated(atom, cons(atom) + rule.head)
-    }
-
-    true
-  }
 }
