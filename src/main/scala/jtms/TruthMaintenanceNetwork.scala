@@ -30,10 +30,6 @@ trait TruthMaintenanceNetwork {
 
   def inAtoms = allAtoms filter (label(_) == in)
 
-  def outAtoms = allAtoms filter (label(_) == out)
-
-  def unknownAtoms = allAtoms filter (label(_) == unknown)
-
   def hasUnknown = allAtoms exists (label(_) == unknown)
 
   //affected(a) = {x ∈ cons(a) | a ∈ supp(x)}

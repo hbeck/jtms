@@ -91,7 +91,7 @@ class JtmsDoyle(tmn: TruthMaintenanceNetwork, random: Random = new Random()) {
     if (choice(a)) {
       tmn.unknownCons(a) foreach chooseLabel
     } else {
-      val aff = shuffle(tmn.affected(a) + a) //overcome potential non-termination
+      val aff = shuffle(tmn.affected(a) + a) //shuffle to overcome potential non-termination
       aff foreach setUnknown
       aff foreach chooseLabel
     }
