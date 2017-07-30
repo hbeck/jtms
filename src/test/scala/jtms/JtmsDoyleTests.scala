@@ -9,16 +9,19 @@ import org.scalatest.FunSuite
   */
 class JtmsDoyleTests extends FunSuite {
 
-  val E = Set[Atom]()
+  val __ = Set[Atom]()
+  def r(head:Atom,pos:Atom,neg:Atom) = Rule(head,Set(pos),Set(neg))
+  def r(head:Atom,pos:Set[Atom],neg:Set[Atom]) = Rule(head,pos,neg)
+  def r(head:Atom,pos:Atom,neg:Set[Atom]) = Rule(head,Set(pos),neg)
+  def r(head:Atom,pos:Set[Atom],neg:Atom) = Rule(head,pos,Set(neg))
 
   test("ex 1") {
 
     val x = Atom("x")
     val y = Atom("y")
 
-    val r1 = Rule(x, E, E)
-    // x <-
-    val r2 = Rule(y, Set(x), E) // y <- x
+    val r1 = r(x, __, __) // x <-
+    val r2 = r(y, x, __) // y <- x
 
     assert(r1.isFact)
 
@@ -41,18 +44,16 @@ class JtmsDoyleTests extends FunSuite {
     val b = Atom("b")
     val c = Atom("c")
 
-    val r1 = Rule(a, Set(b), E)
-    //a <- b
-    val r2 = Rule(b, E, Set(c))
-    //b <- not c
-    val r3 = Rule(c, E, Set(a)) //c <- not a
+    val r1 = r(a, b, __) //a <- b
+    val r2 = r(b, __, c) //b <- not c
+    val r3 = r(c, __, a) //c <- not a
 
     val jtms = JtmsDoyle()
 
     def model = jtms.getModel.get
 
     jtms add r1
-    assert(model equals E)
+    assert(model.isEmpty)
 
     jtms add r2
     assert(model equals Set(a, b))
@@ -69,7 +70,7 @@ class JtmsDoyleTests extends FunSuite {
 
   }
 
-  test("ex 4-7") {
+  test("ex 4-7, 11-12") {
 
     val a = Atom("a")
     val b = Atom("b")
@@ -77,26 +78,20 @@ class JtmsDoyleTests extends FunSuite {
     val d = Atom("d")
     val e = Atom("e")
 
-    val r1 = Rule(a, Set(b), E)
-    //a <- b
-    val r2 = Rule(b, E, Set(c))
-    //b <- not c
-    val r3 = Rule(a, Set(d), E)
-    //a <- d
-    val r4 = Rule(d, Set(c), E)
-    //d <- c
-    val r5 = Rule(c, Set(d), E)
-    //c <- d
-    val r6 = Rule(c, E, Set(e))
-    //c <- not e
-    val r7 = Rule(e, E, E) // e <-
+    val r1 = r(a, b, __) //a <- b
+    val r2 = r(b, __, c) //b <- not c
+    val r3 = r(a, d, __) //a <- d
+    val r4 = r(d, c, __) //d <- c
+    val r5 = r(c, d, __) //c <- d
+    val r6 = r(c, __, e)  //c <- not e
+    val r7 = r(e, __, __) // e <-
 
     val jtms = JtmsDoyle()
 
     def model = jtms.getModel.get
 
     jtms add r1
-    assert(model equals E)
+    assert(model.isEmpty)
 
     jtms add r2
     assert(model equals Set(a, b))
@@ -127,12 +122,12 @@ class JtmsDoyleTests extends FunSuite {
 
     val x = Atom("x")
 
-    val r = Rule(x, E, Set(x)) //x <- not x
+    val r1 = r(x, __, x) //x <- not x
 
     val jtms = JtmsDoyle()
     def model = jtms.getModel.get
 
-    jtms add r
+    jtms add r1
     assert(model equals Set(x)) //inadmissible
 
   }
@@ -142,8 +137,8 @@ class JtmsDoyleTests extends FunSuite {
     val a = Atom("a")
     val b = Atom("b")
 
-    val r1 = Rule(a, E, Set(b)) //a <- not b
-    val r2 = Rule(b, Set(a), E) //b <- a
+    val r1 = r(a, __, b) //a <- not b
+    val r2 = r(b, a, __) //b <- a
 
     val jtms = JtmsDoyle()
     def model = jtms.getModel.get
