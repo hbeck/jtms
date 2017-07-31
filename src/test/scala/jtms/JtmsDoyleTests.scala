@@ -31,8 +31,8 @@ class JtmsDoyleTests extends FunSuite {
     jtms.getModel match {
       case None => assert(fail)
       case Some(model) => {
-        assert(model contains x)
-        assert(model contains y)
+        assert(model.contains(x))
+        assert(model.contains(y))
       }
     }
 
@@ -52,20 +52,20 @@ class JtmsDoyleTests extends FunSuite {
 
     def model = jtms.getModel.get
 
-    jtms add r1
+    jtms.add(r1)
     assert(model.isEmpty)
 
-    jtms add r2
+    jtms.add(r2)
     assert(model equals Set(a, b))
 
-    jtms add r3
-    if (model equals Set(a, b)) {
-      jtms remove r2
-      assert(model equals Set(c))
+    jtms.add(r3)
+    if (model.equals(Set(a, b))) {
+      jtms.remove(r2)
+      assert(model.equals(Set(c)))
     } else {
-      assert(model equals Set(c))
-      jtms remove r3
-      assert(model equals Set(a, b))
+      assert(model.equals(Set(c)))
+      jtms.remove(r3)
+      assert(model.equals(Set(a, b)))
     }
 
   }
@@ -90,31 +90,31 @@ class JtmsDoyleTests extends FunSuite {
 
     def model = jtms.getModel.get
 
-    jtms add r1
+    jtms.add(r1)
     assert(model.isEmpty)
 
-    jtms add r2
-    assert(model equals Set(a, b))
+    jtms.add(r2)
+    assert(model.equals(Set(a, b)))
 
-    jtms add r3
-    assert(model equals Set(a, b))
+    jtms.add(r3)
+    assert(model.equals(Set(a, b)))
 
-    jtms add r4
-    assert(model equals Set(a, b))
+    jtms.add(r4)
+    assert(model.equals(Set(a, b)))
 
-    jtms add r5
-    assert(model equals Set(a, b))
+    jtms.add(r5)
+    assert(model.equals(Set(a, b)))
 
-    jtms add r6
-    assert(model equals Set(a, c, d))
+    jtms.add(r6)
+    assert(model.equals(Set(a, c, d)))
 
-    jtms add r7
-    assert(model equals Set(a, b, e))
+    jtms.add(r7)
+    assert(model.equals(Set(a, b, e)))
 
     //
 
-    jtms remove r3
-    assert(model equals Set(a, b, e))
+    jtms.remove(r3)
+    assert(model.equals(Set(a, b, e)))
 
   }
 
@@ -127,8 +127,8 @@ class JtmsDoyleTests extends FunSuite {
     val jtms = JtmsDoyle()
     def model = jtms.getModel.get
 
-    jtms add r1
-    assert(model equals Set(x)) //inadmissible
+    jtms.add(r1)
+    assert(model.equals(Set(x))) //inadmissible
 
   }
 
@@ -143,11 +143,11 @@ class JtmsDoyleTests extends FunSuite {
     val jtms = JtmsDoyle()
     def model = jtms.getModel.get
 
-    jtms add r1
-    assert(model equals Set(a))
+    jtms.add(r1)
+    assert(model.equals(Set(a)))
 
     //using the following line will cause an infinite loop
-    //jtms add r2
+    //jtms.add(r2)
   }
 
 }

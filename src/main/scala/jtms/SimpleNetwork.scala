@@ -7,13 +7,13 @@ import scala.util.Random
 class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwork {
 
   override def register(rule: Rule): Unit = {
-    if (rules contains rule) return
+    if (rules.contains(rule)) return
 
     rules = rules + rule
 
-    rule.atoms foreach register
-    rule.body foreach { atom =>
-      cons = cons updated(atom, cons(atom) + rule.head)
+    rule.atoms.foreach(register)
+    rule.body.foreach { atom =>
+      cons = cons.updated(atom, cons(atom) + rule.head)
     }
   }
 
@@ -26,19 +26,19 @@ class SimpleNetwork(random: Random = new Random()) extends TruthMaintenanceNetwo
   }
 
   override def deregister(rule: Rule): Unit = {
-    if (!(rules contains rule)) return
+    if (!rules.contains(rule)) return
 
     rules = rules - rule
 
-    val remainingAtoms = rules flatMap (_.atoms)
+    val remainingAtoms = rules.flatMap(_.atoms)
 
-    (rule.atoms diff remainingAtoms) foreach deregister
-    (rule.body intersect remainingAtoms) foreach removeDeprecatedCons(rule)
+    rule.atoms.diff(remainingAtoms).foreach(deregister)
+    rule.body.intersect(remainingAtoms).foreach(removeDeprecatedCons(rule))
 
   }
 
   def removeDeprecatedCons(rule: Rule)(a: Atom): Unit = {
-    if (!(justifications(rule.head) exists (_.body contains a))) {
+    if (!justifications(rule.head).exists(_.body.contains(a))) {
       cons = cons.updated(a, cons(a) - rule.head)
     }
   }

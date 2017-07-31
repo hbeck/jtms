@@ -24,29 +24,26 @@ trait TruthMaintenanceNetwork {
   //
 
   //J
-  def justifications(a: Atom): Set[Rule] = rules filter (_.head == a)
+  def justifications(a: Atom): Set[Rule] = rules.filter(_.head == a)
 
-  def allAtoms: Set[Atom] = rules flatMap (_.atoms)
+  def allAtoms: Set[Atom] = rules.flatMap(_.atoms)
 
-  def inAtoms = allAtoms filter (label(_) == in)
+  def inAtoms = allAtoms.filter(label(_) == in)
 
-  def hasUnknown = allAtoms exists (label(_) == unknown)
+  def hasUnknown = allAtoms.exists(label(_) == unknown)
 
   //affected(a) = {x ∈ cons(a) | a ∈ supp(x)}
-  def affected(a: Atom): Set[Atom] = cons(a) filter (supp(_) contains a)
+  def affected(a: Atom): Set[Atom] = cons(a).filter(supp(_) contains a)
 
   def repercussions(a: Atom) = trans(affected, a)
 
-  def valid(rule: Rule) =
-    (rule.pos forall (label(_) == in)) && (rule.neg forall (label(_) == out))
+  def valid(rule: Rule) = (rule.pos.forall(label(_) == in)) && (rule.neg.forall(label(_) == out))
 
-  def invalid(rule: Rule) =
-    (rule.pos exists (label(_) == out)) || (rule.neg exists (label(_) == in))
+  def invalid(rule: Rule) = (rule.pos.exists(label(_) == out)) || (rule.neg.exists(label(_) == in))
 
-  def posValid(rule: Rule) =
-    (rule.pos forall (label(_) == in)) && (!(rule.neg exists (label(_) == in)))
+  def posValid(rule: Rule) = (rule.pos.forall(label(_) == in)) && (!rule.neg.exists(label(_) == in))
 
-  def unknownCons(a: Atom) = cons(a) filter (label(_) == unknown)
+  def unknownCons(a: Atom) = cons(a).filter(label(_) == unknown)
 
   def clearSupport(a: Atom): Unit
 
