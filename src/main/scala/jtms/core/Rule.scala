@@ -2,7 +2,7 @@ package jtms.core
 
 case class Rule(head: Atom, pos: Set[Atom], neg: Set[Atom]) {
 
-  lazy val body = pos union neg
+  lazy val body = pos.union(neg)
 
   lazy val isFact: Boolean = pos.isEmpty && neg.isEmpty
 
@@ -21,7 +21,7 @@ case class Rule(head: Atom, pos: Set[Atom], neg: Set[Atom]) {
   }
 
   override def toString(): String = {
-    val sb = new StringBuilder
+    val sb = new StringBuilder()
 
     def result: String = sb.toString
 
@@ -37,7 +37,7 @@ case class Rule(head: Atom, pos: Set[Atom], neg: Set[Atom]) {
       sb.append(pos.head)
     } else if (pos.size > 1) {
       sb.append(pos.head)
-      pos.tail foreach (sb.append(", ").append(_))
+      pos.tail.foreach(sb.append(", ").append(_))
     }
 
     if (neg.isEmpty) {
@@ -53,7 +53,7 @@ case class Rule(head: Atom, pos: Set[Atom], neg: Set[Atom]) {
       sb.append("not ").append(neg.head)
     } else if (neg.size > 1) {
       sb.append(neg.head)
-      neg.tail foreach (sb.append(", not ").append(_))
+      neg.tail.foreach(sb.append(", not ").append(_))
     }
 
     sb.append(".")
